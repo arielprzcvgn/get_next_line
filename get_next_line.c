@@ -6,24 +6,16 @@
 /*   By: ariperez <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/12/19 12:06:01 by ariperez          #+#    #+#             */
-/*   Updated: 2019/01/03 18:30:29 by ariperez         ###   ########.fr       */
+/*   Updated: 2019/01/04 16:02:24 by ariperez         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "get_next_line.h"
 
-t_list	*fd_choice(int fd, t_list *file)
+t_list	*fd_choice(int fd, t_list *file, char *buf)
 {
 	t_list	*begin;
-	char	*buf;
 
-	if (!(buf = ft_strnew(BUFF_SIZE + 1)))
-		return (NULL);
-	if (!file && ((!(file = malloc(sizeof(t_list)))) ||
-		!(file->content = buf) ||
-		!(file->content_size = (size_t)fd) ||
-		!(file->next = file)))
-		return (NULL);
 	begin = file;
 	while ((size_t)fd != file->content_size)
 	{
@@ -36,7 +28,6 @@ t_list	*fd_choice(int fd, t_list *file)
 			file->content_size = (size_t)fd;
 			file->next = begin->next;
 			begin->next = file;
-			return (file);
 		}
 	}
 	return (file);
@@ -73,10 +64,21 @@ int		get_next_line(const int fd, char **line)
 	static t_list	*file;
 	char			*copy;
 	int				ret;
+	char			*buf;
 
 	ret = -1;
+	if (!(buf = ft_strnew(BUFF_SIZE + 1)))
+		return (ret);
+	if (!file)
+	{
+		if (!(file = malloc(sizeof(t_list))))
+			return (ret);
+		file->content = buf;
+		file->content_size = (size_t)fd;
+		file->next = file;
+	}
 	if (fd < 0 || !(copy = ft_strnew(1)) || read(fd, copy, 0) == -1 ||
-		BUFF_SIZE < 0 || !line || !(file = fd_choice(fd, file)))
+			BUFF_SIZE < 0 || !line || !(file = fd_choice(fd, file, buf)))
 		return (ret);
 	ret = readline((int)file->content_size, file->content, &copy);
 	if (!(*line = ft_strdup(copy)))
